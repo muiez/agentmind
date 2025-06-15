@@ -12,7 +12,7 @@ Every AI agent needs memory. Today, developers hack together vector DBs, prompt 
 from agentmind import Memory
 
 # Initialize once
-memory = Memory(api_key="your-api-key")
+memory = Memory(local_mode=True)  # No API key needed
 
 # Remember anything
 memory.remember("User prefers Python over JavaScript")
@@ -52,7 +52,7 @@ pip install git+https://github.com/muiez/agentmind.git
 ```python
 from agentmind import Memory
 
-memory = Memory(api_key="am_live_xxx")
+memory = Memory(local_mode=True)
 
 # Store memories
 memory.remember("User is building a startup in AI")
@@ -70,7 +70,7 @@ print(context)
 from langchain import ConversationChain
 from agentmind.integrations.langchain import agentmindMemory
 
-memory = AgentMindMemory(api_key="am_live_xxx", user_id="user123")
+memory = AgentMindMemory(local_mode=True, user_id="user123")
 
 chain = ConversationChain(
     llm=your_llm,
@@ -88,7 +88,7 @@ from openai import OpenAI
 from agentmind.integrations.openai import enhance_with_memory
 
 client = OpenAI()
-memory = Memory(api_key="am_live_xxx")
+memory = Memory(local_mode=True)
 
 # Enhance your chat with memory
 messages = [
@@ -146,14 +146,20 @@ summary = memory.summarize_session(session_id="chat_123")
 data = memory.export_user_data(user_id="user_123")
 ```
 
-## Pricing
+## Deployment Options
 
-| Plan | Memories | Recalls/mo | Price |
-|------|----------|------------|-------|
-| **Free** | 10,000 | 100,000 | $0 |
-| **Pro** | 100,000 | 1M | $99/mo |
-| **Business** | Unlimited | Unlimited | $499/mo |
-| **Enterprise** | Custom | Custom | Contact us |
+### 🏠 Self-Hosted (Available Now)
+Run AgentMind locally or on your own infrastructure. Perfect for development and testing.
+
+```python
+# Works completely offline
+memory = Memory(local_mode=True)
+```
+
+### ☁️ Hosted Cloud Service (Coming Soon)
+We're building a managed cloud service so you don't have to worry about infrastructure, scaling, or maintenance.
+
+**[→ Join the waitlist](#)** to get early access and special launch pricing.
 
 ## Use Cases
 
