@@ -50,30 +50,26 @@ pip install agentmind
 ### With LangChain
 
 ```python
-from langchain.chat_models import ChatOpenAI
-from langchain.schema import HumanMessage, SystemMessage
-from agentmind import Memory
+from langchain import ConversationChain
+from langchain.llms import OpenAI
+from agentmind.integrations.langchain import AgentMindMemory
 
-# Healthcare intake bot that remembers patient history
-memory = Memory(local_mode=True, user_id="patient_1234")
-llm = ChatOpenAI(model="gpt-4")
+# Use AgentMind as LangChain's memory - persists across sessions!
+memory = AgentMindMemory(local_mode=True, user_id="user_123")
 
-# Store patient information over multiple visits
-memory.remember("Patient: John Smith, age 45, diabetic")
-memory.remember("Allergic to penicillin and sulfa drugs")
-memory.remember("Last visit: complained of fatigue and frequent urination")
-memory.remember("Current medications: Metformin 500mg twice daily")
+chain = ConversationChain(
+    llm=OpenAI(),
+    memory=memory
+)
 
-# During new appointment, get relevant context
-context = memory.recall("John Smith medical history")
+# First conversation
+chain.predict(input="I'm working on a React app with TypeScript")
+chain.predict(input="I need help with state management")
 
-messages = [
-    SystemMessage(content=f"You are a medical intake assistant. Patient history: {context}"),
-    HumanMessage(content="I'm having chest pain and shortness of breath")
-]
-
-response = llm(messages)
-# AI knows patient's diabetes history and current medications when assessing new symptoms
+# Later session - the AI remembers!
+response = chain.predict(input="What technology stack am I using?")
+# Output: "You're working on a React app with TypeScript. Last time we discussed
+# state management options for your project."
 ```
 
 ### With OpenAI
@@ -89,8 +85,6 @@ memory = Memory(local_mode=True, user_id="founder_1234")
 # Track founder's journey and challenges
 memory.remember("Building a fintech startup focused on small business lending")
 memory.remember("Team of 8 people, raised $2M seed round last month")
-memory.remember("Struggling with regulatory compliance - need SOC2 certification")
-memory.remember("Main competitor is Kabbage, but we focus on underserved markets")
 memory.remember("Revenue goal: $1M ARR by end of year")
 
 # Founder asks for strategic advice
