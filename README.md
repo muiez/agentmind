@@ -2,6 +2,7 @@
 
 > The missing memory layer for AI agents. Simple, fast, and powerful.
 
+[![PyPI version](https://badge.fury.io/py/agentmind.svg)](https://badge.fury.io/py/agentmind)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Why agentmind?
