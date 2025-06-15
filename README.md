@@ -1,35 +1,40 @@
 # agentmind memory 🧠
 
-> The missing memory layer for AI agents. Simple, fast, and powerful.
+> The conscience layer for AI agents. Memory, beliefs, reflection, and ethics in one simple package.
 
 [![PyPI version](https://badge.fury.io/py/agentmind.svg)](https://badge.fury.io/py/agentmind)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Why agentmind?
 
-Every AI agent needs memory. Today, developers hack together vector DBs, prompt engineering, and custom storage. We make it simple.
+Every AI agent needs a conscience - memory to remember, beliefs to guide decisions, reflection to improve, and ethics to stay aligned. Today, developers hack together vector DBs, prompt engineering, and custom storage. We make it simple.
 
 ```python
 from agentmind import Memory
 
-# Initialize memory for your AI assistant
-memory = Memory(local_mode=True)
+# Initialize memory for your AI assistant with session tracking
+memory = Memory(local_mode=True, session_id="chat_001")
 
-# Store facts during conversation
-memory.remember("My name is Alex")
-memory.remember("I live in New York")
-memory.remember("I'm vegetarian")
-memory.remember("I have a meeting at 3pm today")
+# Store different types of data during conversation
+memory.remember("I prefer morning meetings")
+memory.remember("My current project deadline is March 15th")
+memory.remember({
+    "preferences": {
+        "communication_style": "direct and concise",
+        "meeting_times": ["9am", "2pm"],
+        "timezone": "EST"
+    }
+})
 
-# Later when you ask for help...
-context = memory.recall("restaurant")
-# Returns: ["I'm vegetarian"]
+# Later when you need context...
+context = memory.recall("meeting preferences")
+# Returns: ["I prefer morning meetings", {"preferences": {"meeting_times": ["9am", "2pm"], ...}}]
 
-context = memory.recall("schedule today")
-# Returns: ["I have a meeting at 3pm today"]
+context = memory.recall("deadlines")
+# Returns: ["My current project deadline is March 15th"]
 ```
 
-That's it. No vector DBs to manage. No complex prompt engineering. Just memory that works.
+That's it. No vector DBs to manage. No complex prompt engineering. Just a conscience that works.
 
 ## Features
 
@@ -116,19 +121,29 @@ memories = memory.recall(
 
 ### Memory Management
 ```python
-# Organize memories
+# Store complex data structures
+user_profile = {
+    "name": "Sarah Chen",
+    "role": "Product Manager",
+    "team": "Growth",
+    "goals": ["Increase user retention", "Launch mobile app"],
+    "last_review": "2024-01-15"
+}
+memory.remember(user_profile, session_id="onboarding_001")
+
+# Organize memories with metadata
 memory.remember("Q4 revenue target: $1M", metadata={
     "category": "business",
     "importance": "high",
     "expires": "2024-12-31"
-})
+}, session_id="planning_session")
 
 # Batch operations
 memories = [
     {"content": "Launched MVP", "timestamp": "2024-01-15"},
     {"content": "First customer", "timestamp": "2024-02-01"}
 ]
-memory.remember_batch(memories)
+memory.remember_batch(memories, session_id="milestone_tracking")
 
 # Forget when needed
 memory.forget(memory_id="mem_abc123")
@@ -191,6 +206,7 @@ memory = Memory(api_key="your-api-key")
 - [x] Core memory API
 - [x] LangChain integration
 - [x] OpenAI integration
+- [ ] smolagents integration
 - [x] Semantic search
 - [ ] Memory compression
 - [ ] Multi-modal memories (images, audio)
