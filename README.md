@@ -34,15 +34,7 @@ That's it. No vector DBs to manage. No complex prompt engineering. Just memory t
 ## Installation
 
 ```bash
-# Clone and install from source (PyPI coming soon!)
-git clone https://github.com/muiez/agentmind.git
-cd agentmind
-pip install -e .
-```
-
-Or for quick testing:
-```bash
-pip install git+https://github.com/muiez/agentmind.git
+pip install agentmind
 ```
 
 ## Quick Start

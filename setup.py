@@ -2,12 +2,15 @@
 AgentMind Memory - The missing memory layer for AI agents
 """
 from setuptools import setup, find_packages
+import os
 
-with open("README.md", "r", encoding="utf-8") as fh:
+here = os.path.abspath(os.path.dirname(__file__))
+
+with open(os.path.join(here, "README.md"), "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="agentmind-memory",
+    name="agentmind",
     version="0.1.0",
     author="muiez",
     author_email="",
