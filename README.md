@@ -20,6 +20,7 @@ memory.remember("User prefers Python over JavaScript")
 
 # Recall when needed
 context = memory.recall("What programming languages does the user like?")
+# Returns: ["User prefers Python over JavaScript"]
 ```
 
 That's it. No vector DBs to manage. No complex prompt engineering. Just memory that works.
@@ -28,7 +29,7 @@ That's it. No vector DBs to manage. No complex prompt engineering. Just memory t
 
 - 🚀 **5-minute integration** - Drop-in memory for any LLM app
 - 🔌 **Framework agnostic** - Works with LangChain, OpenAI, Anthropic, and more
-- ⚡ **Fast** - Sub-200ms recall latency (p99)
+- ⚡ **Fast** - Sub-200ms recall latency
 - 🔒 **Secure** - Optional E2E encryption, GDPR compliant
 - 📊 **Smart** - Semantic search, auto-summarization, importance ranking
 
@@ -151,6 +152,11 @@ memory = Memory(local_mode=True)
 
 ### ☁️ Hosted Cloud Service (Coming Soon)
 We're building a managed cloud service so you don't have to worry about infrastructure, scaling, or maintenance.
+
+```python
+# Cloud mode with API key (coming soon)
+memory = Memory(api_key="your-api-key")
+```
 
 **[→ Join the waitlist](#)** to get early access and special launch pricing.
 
