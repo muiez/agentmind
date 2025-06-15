@@ -9,12 +9,12 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setup(
     name="agentmind-memory",
     version="0.1.0",
-    author="AgentMind AI",
+    author="muiez",
     author_email="",
     description="Plug-and-play memory for AI agents. Simple, fast, and powerful.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/agentmind-ai/agentmind",
+    url="https://github.com/muiez/agentmind",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -46,10 +46,5 @@ setup(
         ],
         "langchain": ["langchain>=0.1.0"],
         "openai": ["openai>=1.0.0"],
-    },
-    entry_points={
-        "console_scripts": [
-            "agentmind=agentmind.cli:main",
-        ],
     },
 )

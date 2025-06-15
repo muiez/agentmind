@@ -5,7 +5,7 @@ import os
 import json
 import hashlib
 from typing import Optional, List, Dict, Any, Union
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import requests
 from .types import (
     MemoryConfig, RecallStrategy, MemoryEntry, 
@@ -85,7 +85,24 @@ class Memory:
             MemoryEntry: The stored memory
         """
         # Create memory metadata
-        meta = MemoryMetadata(**(metadata or {}))
+        if metadata:
+            # Separate known fields from custom fields
+            known_fields = {'importance', 'confidence', 'category', 'source', 'tags'}
+            meta_dict = {}
+            custom_fields = {}
+            
+            for key, value in metadata.items():
+                if key in known_fields:
+                    meta_dict[key] = value
+                else:
+                    custom_fields[key] = value
+            
+            if custom_fields:
+                meta_dict['custom'] = custom_fields
+                
+            meta = MemoryMetadata(**meta_dict)
+        else:
+            meta = MemoryMetadata()
         
         # Generate memory ID
         memory_id = self._generate_id(content, user_id)
@@ -97,7 +114,7 @@ class Memory:
             metadata=meta,
             user_id=user_id or self.config.namespace,
             session_id=session_id,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             ttl=ttl
         )
         
@@ -208,7 +225,7 @@ class Memory:
     
     def get_recent(self, hours: int = 24, user_id: Optional[str] = None) -> List[str]:
         """Get recent memories"""
-        cutoff = datetime.utcnow() - timedelta(hours=hours)
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
         recent = []
         
         for memory_id, entry in self._cache.items():
@@ -285,11 +302,11 @@ class Memory:
         user_memories = []
         for memory_id, entry in self._cache.items():
             if entry.user_id == user_id:
-                user_memories.append(entry.dict())
+                user_memories.append(entry.model_dump())
         
         return {
             "user_id": user_id,
-            "export_date": datetime.utcnow().isoformat(),
+            "export_date": datetime.now(timezone.utc).isoformat(),
             "memory_count": len(user_memories),
             "memories": user_memories
         }
@@ -321,7 +338,7 @@ class Memory:
             # Convert entries to JSON-serializable format
             entries_data = []
             for e in self._cache.values():
-                entry_dict = e.dict()
+                entry_dict = e.model_dump()
                 # Convert datetime to string
                 entry_dict['timestamp'] = entry_dict['timestamp'].isoformat()
                 entries_data.append(entry_dict)
@@ -340,5 +357,5 @@ class Memory:
     
     def _generate_id(self, content: str, user_id: Optional[str] = None) -> str:
         """Generate unique memory ID"""
-        unique_string = f"{content}{user_id or ''}{datetime.utcnow().isoformat()}"
+        unique_string = f"{content}{user_id or ''}{datetime.now(timezone.utc).isoformat()}"
         return f"mem_{hashlib.sha256(unique_string.encode()).hexdigest()[:12]}"

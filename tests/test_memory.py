@@ -2,7 +2,7 @@
 Tests for AgentMind Memory
 """
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from agentmind import Memory, MemoryConfig, RecallStrategy
 
 
@@ -18,7 +18,7 @@ def test_remember_basic(memory):
     
     assert entry.content == "Test memory content"
     assert entry.id.startswith("mem_")
-    assert entry.timestamp <= datetime.utcnow()
+    assert entry.timestamp <= datetime.now(timezone.utc)
 
 
 def test_remember_with_metadata(memory):

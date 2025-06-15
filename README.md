@@ -2,9 +2,8 @@
 
 > The missing memory layer for AI agents. Simple, fast, and powerful.
 
-[![PyPI](https://img.shields.io/pypi/v/agentmind-memory)](https://pypi.org/project/agentmind-memory/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Discord](https://img.shields.io/discord/123456789)](https://discord.gg/agentmind)
+[![GitHub stars](https://img.shields.io/github/stars/muiez/agentmind?style=social)](https://github.com/muiez/agentmind)
 
 ## Why AgentMind?
 
@@ -36,7 +35,15 @@ That's it. No vector DBs to manage. No complex prompt engineering. Just memory t
 ## Installation
 
 ```bash
-pip install agentmind-memory
+# Clone and install from source (PyPI coming soon!)
+git clone https://github.com/muiez/agentmind.git
+cd agentmind
+pip install -e .
+```
+
+Or for quick testing:
+```bash
+pip install git+https://github.com/muiez/agentmind.git
 ```
 
 ## Quick Start

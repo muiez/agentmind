@@ -119,7 +119,7 @@ def main():
     typewriter("npm install agentmind  # or")
     typewriter("pip install agentmind")
     print()
-    typewriter("🌐 agentmind.ai")
+    typewriter("🌐 https://github.com/muiez/agentmind")
     print()
     typewriter("🚀 Join 1,000+ developers building smarter AI")
     print("\n╚══════════════════════════════════════════╝")
@@ -128,4 +128,4 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\n\nDemo interrupted. Visit agentmind.ai to learn more!")
+        print("\n\nDemo interrupted. Visit github.com/muiez/agentmind to learn more!")
