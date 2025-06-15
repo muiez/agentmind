@@ -11,7 +11,7 @@ with open(os.path.join(here, "README.md"), "r", encoding="utf-8") as fh:
 
 setup(
     name="agentmind",
-    version="0.1.0",
+    version="0.1.3",
     author="muiez",
     author_email="",
     description="Plug-and-play memory for AI agents. Simple, fast, and powerful.",
