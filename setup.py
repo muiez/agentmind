@@ -10,7 +10,7 @@ setup(
     name="agentmind-memory",
     version="0.1.0",
     author="AgentMind AI",
-    author_email="hello@agentmind.ai",
+    author_email="",
     description="Plug-and-play memory for AI agents. Simple, fast, and powerful.",
     long_description=long_description,
     long_description_content_type="text/markdown",

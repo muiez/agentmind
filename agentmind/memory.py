@@ -165,15 +165,24 @@ class Memory:
         #     }
         # )
         
-        # For MVP, simple local search
+        # For MVP, simple local search with improved matching
         results = []
+        query_words = query.lower().split()
+        
         for memory_id, entry in self._cache.items():
             if user_id and entry.user_id != user_id:
                 continue
             
-            # Simple keyword matching for MVP
-            if query.lower() in entry.content.lower():
+            # Check if any query word appears in the content
+            content_lower = entry.content.lower()
+            if any(word in content_lower for word in query_words):
                 results.append(entry.content)
+            
+            # Also check metadata category if it exists
+            if filters and 'category' in filters:
+                if entry.metadata.category == filters['category']:
+                    if entry.content not in results:
+                        results.append(entry.content)
             
             if len(results) >= limit:
                 break

@@ -14,11 +14,10 @@ def demo_basic_usage():
     
     # Store some memories
     print("1. Storing memories...")
-    memory.remember("User is building an AI startup called AgentMind")
     memory.remember("User prefers Python for backend development", metadata={"category": "tech_preference"})
     memory.remember("User mentioned they have expertise in ML compilers", metadata={"importance": 0.9})
     memory.remember("Meeting scheduled for next Tuesday at 3pm", metadata={"category": "calendar"})
-    print("✓ Stored 4 memories\n")
+    print("✓ Stored 3 memories\n")
     
     # Recall memories
     print("2. Recalling relevant context...")
@@ -40,7 +39,6 @@ def demo_basic_usage():
     print("5. Session management...")
     session_id = "demo_session_001"
     memory.remember("Discussed memory layer architecture", session_id=session_id)
-    memory.remember("Decided to build Redis-like API", session_id=session_id)
     memory.remember("Target: 200ms recall latency", session_id=session_id)
     
     summary = memory.summarize_session(session_id)

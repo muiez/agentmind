@@ -147,7 +147,7 @@ data = memory.export_user_data(user_id="user_123")
 | **Free** | 10,000 | 100,000 | $0 |
 | **Pro** | 100,000 | 1M | $99/mo |
 | **Business** | Unlimited | Unlimited | $499/mo |
-| **Enterprise** | Custom | Custom | [Contact us](mailto:sales@agentmind.ai) |
+| **Enterprise** | Custom | Custom | Contact us |
 
 ## Use Cases
 
@@ -172,14 +172,14 @@ data = memory.export_user_data(user_id="user_123")
 
 - [Discord](https://discord.gg/agentmind) - Chat with the community
 - [Twitter](https://twitter.com/agentmindai) - Latest updates
-- [Blog](https://agentmind.ai/blog) - Tutorials and insights
+- Blog - Coming soon
 
 ## Contributing
 
 We love contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ```bash
-git clone https://github.com/agentmind-ai/agentmind
+git clone https://github.com/muiez/agentmind
 cd agentmind
 pip install -e ".[dev]"
 pytest
