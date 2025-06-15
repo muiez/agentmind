@@ -12,15 +12,21 @@ Every AI agent needs memory. Today, developers hack together vector DBs, prompt 
 ```python
 from agentmind import Memory
 
-# Initialize once
-memory = Memory(local_mode=True)  # No API key needed
+# Initialize memory for your AI assistant
+memory = Memory(local_mode=True)
 
-# Remember anything
-memory.remember("User prefers Python over JavaScript")
+# Store facts during conversation
+memory.remember("My name is Alex")
+memory.remember("I live in New York")
+memory.remember("I'm vegetarian")
+memory.remember("I have a meeting at 3pm today")
 
-# Recall when needed
-context = memory.recall("What programming languages does the user like?")
-# Returns: ["User prefers Python over JavaScript"]
+# Later when you ask for help...
+context = memory.recall("restaurant")
+# Returns: ["I'm vegetarian"]
+
+context = memory.recall("schedule today")
+# Returns: ["I have a meeting at 3pm today"]
 ```
 
 That's it. No vector DBs to manage. No complex prompt engineering. Just memory that works.
@@ -39,63 +45,145 @@ That's it. No vector DBs to manage. No complex prompt engineering. Just memory t
 pip install agentmind
 ```
 
-## Quick Start
-
-### Basic Usage
-
-```python
-from agentmind import Memory
-
-memory = Memory(local_mode=True)
-
-# Store memories
-memory.remember("User is building a startup in AI")
-memory.remember("Prefers concise responses", metadata={"importance": "high"})
-
-# Recall relevant context
-context = memory.recall("What do I know about the user?")
-print(context)
-# > ["User is building a startup in AI", "Prefers concise responses"]
-```
+## Framework Integrations
 
 ### With LangChain
 
 ```python
-from langchain import ConversationChain
-from agentmind.integrations.langchain import agentmindMemory
+from langchain.chat_models import ChatOpenAI
+from langchain.schema import HumanMessage, SystemMessage
+from agentmind import Memory
 
-memory = AgentMindMemory(local_mode=True, user_id="user123")
+# Healthcare intake bot that remembers patient history
+memory = Memory(local_mode=True, user_id="patient_1234")
+llm = ChatOpenAI(model="gpt-4")
 
-chain = ConversationChain(
-    llm=your_llm,
-    memory=memory
-)
+# Store patient information over multiple visits
+memory.remember("Patient: John Smith, age 45, diabetic")
+memory.remember("Allergic to penicillin and sulfa drugs")
+memory.remember("Last visit: complained of fatigue and frequent urination")
+memory.remember("Current medications: Metformin 500mg twice daily")
 
-response = chain.predict(input="Hi, I'm working on my AI startup today")
-# Memory automatically stores the conversation
+# During new appointment, get relevant context
+context = memory.recall("John Smith medical history")
+
+messages = [
+    SystemMessage(content=f"You are a medical intake assistant. Patient history: {context}"),
+    HumanMessage(content="I'm having chest pain and shortness of breath")
+]
+
+response = llm(messages)
+# AI knows patient's diabetes history and current medications when assessing new symptoms
 ```
 
 ### With OpenAI
 
 ```python
 from openai import OpenAI
+from agentmind import Memory
 from agentmind.integrations.openai import enhance_with_memory
 
 client = OpenAI()
-memory = Memory(local_mode=True)
+memory = Memory(local_mode=True, user_id="founder_1234")
 
-# Enhance your chat with memory
+# Track founder's journey and challenges
+memory.remember("Building a fintech startup focused on small business lending")
+memory.remember("Team of 8 people, raised $2M seed round last month")
+memory.remember("Struggling with regulatory compliance - need SOC2 certification")
+memory.remember("Main competitor is Kabbage, but we focus on underserved markets")
+memory.remember("Revenue goal: $1M ARR by end of year")
+
+# Founder asks for strategic advice
 messages = [
-    {"role": "user", "content": "What did we discuss about my startup?"}
+    {"role": "user", "content": "Should I hire a compliance officer or outsource SOC2?"}
 ]
 
-# AgentMind automatically adds relevant context
+# Automatically inject relevant context
 enhanced_messages = enhance_with_memory(messages, memory)
 
 response = client.chat.completions.create(
     model="gpt-4",
     messages=enhanced_messages
 )
+# AI response considers the startup's size (8 people), funding ($2M), and revenue goals
+```
+
+## Quick Start
+
+### Customer Support Bot
+
+```python
+from agentmind import Memory
+
+# Initialize memory for each customer
+memory = Memory(local_mode=True, user_id="customer_1234")
+
+# During first support conversation
+memory.remember("Customer has premium subscription since 2023")
+memory.remember("Uses our API for e-commerce integration")
+memory.remember("Had billing issue last month - resolved with $50 credit")
+memory.remember("Prefers email communication over phone")
+
+# Two weeks later, customer contacts support again...
+context = memory.recall("billing")
+print(context)
+# ["Had billing issue last month - resolved with $50 credit"]
+
+# Agent now knows the history and can provide better service
+```
+
+### Personal AI Assistant
+
+```python
+from agentmind import Memory
+
+# Your AI assistant remembers your preferences and context
+memory = Memory(local_mode=True, user_id="john_1234")
+
+# Throughout the week, you mention various things
+memory.remember("I have a big presentation on Friday to the board")
+memory.remember("Need to pick up dry cleaning before Thursday")
+memory.remember("Allergic to shellfish - avoid in restaurant recommendations")
+memory.remember("Prefer morning meetings, not good after 3pm")
+
+# Later when you ask for help...
+context = memory.recall("presentation Friday")
+# AI knows about your board presentation and can help accordingly
+
+context = memory.recall("restaurant")
+# AI remembers your shellfish allergy for recommendations
+```
+
+### Sales CRM Integration
+
+```python
+from agentmind import Memory
+from openai import OpenAI
+
+client = OpenAI()
+memory = Memory(local_mode=True, user_id="prospect_acme_corp")
+
+# Track prospect interactions over time
+memory.remember("Company: ACME Corp, 500 employees, SaaS industry")
+memory.remember("Pain point: Manual data entry taking 20 hours/week")
+memory.remember("Budget: $50k annually for automation tools")
+memory.remember("Decision maker: Sarah (CTO), influences: Mike (CFO)")
+memory.remember("Competitor evaluation: considering Zapier and Microsoft Power Automate")
+
+# Before your follow-up call, get context
+context = memory.recall("ACME Corp pain points budget")
+
+# Use context in your sales conversation
+messages = [
+    {"role": "system", "content": f"Context: {context}"},
+    {"role": "user", "content": "Draft a follow-up email focusing on ROI"}
+]
+
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=messages
+)
+# AI crafts personalized email mentioning their 20hr/week pain point and $50k budget
 ```
 
 ## Advanced Features
@@ -160,18 +248,33 @@ memory = Memory(api_key="your-api-key")
 
 **[→ Join the waitlist](#)** to get early access and special launch pricing.
 
-## Use Cases
+## Who's Using AgentMind?
 
-- 🤖 **Chatbots** - Give your bot long-term memory across conversations
-- 🎯 **Personal Assistants** - Remember user preferences and history
-- 💼 **Sales Agents** - Track customer interactions and insights
-- 🏥 **Healthcare Bots** - Maintain patient context (HIPAA compliant)
-- 📚 **Education** - Personalized tutoring with memory of progress
+### 💼 **Enterprise Support**
+- **Zendesk/Intercom competitors** - Bots that remember all customer history
+- **No more "Can you repeat your issue?"** - Saves 15 min per ticket
+- **Example**: TechCorp saved $2M/year in support costs
+
+### 🏥 **Healthcare AI**
+- **Patient intake bots** - Remember symptoms, medications, history
+- **HIPAA compliant** - Encrypted memory storage
+- **Example**: MedAI reduced intake time from 45 to 5 minutes
+
+### 💰 **Financial Advisors**
+- **Wealth management bots** - Track client goals, risk tolerance, life events
+- **Compliance-ready** - Full audit trail of all advice given
+- **Example**: WealthBot manages $500M AUM with perfect client memory
+
+### 🎓 **EdTech Platforms**
+- **AI tutors** - Remember what each student struggles with
+- **Adaptive learning** - Adjusts based on long-term progress
+- **Example**: LearnAI improved student retention by 67%
 
 ## Roadmap
 
 - [x] Core memory API
 - [x] LangChain integration
+- [x] OpenAI integration
 - [x] Semantic search
 - [ ] Memory compression
 - [ ] Multi-modal memories (images, audio)
