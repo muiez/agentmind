@@ -1,10 +1,10 @@
-# AgentMind Memory 🧠
+# agentmind memory 🧠
 
 > The missing memory layer for AI agents. Simple, fast, and powerful.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Why AgentMind?
+## Why agentmind?
 
 Every AI agent needs memory. Today, developers hack together vector DBs, prompt engineering, and custom storage. We make it simple.
 
@@ -68,7 +68,7 @@ print(context)
 
 ```python
 from langchain import ConversationChain
-from agentmind.integrations.langchain import AgentMindMemory
+from agentmind.integrations.langchain import agentmindMemory
 
 memory = AgentMindMemory(api_key="am_live_xxx", user_id="user123")
 
