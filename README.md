@@ -121,20 +121,44 @@ response = client.chat.completions.create(
 
 ## Advanced Features
 
+### Semantic Search
+```python
+# Find memories by meaning, not just keywords
+memories = memory.recall(
+    "technical challenges",
+    strategy="semantic",
+    limit=5
+)
+
+# Context-aware retrieval
+context = memory.recall("user's communication preferences")
+# Finds: "I prefer direct and concise communication style"
+
+# Multi-strategy search
+relevant = memory.recall(
+    "recent product feedback",
+    strategy="hybrid",  # Combines semantic + recency
+    user_id="customer_123"
+)
+```
+
 ### Direct Memory Access
 ```python
 # Store with custom ID for easy retrieval
-memory.remember({"api_key": "secret", "endpoint": "https://api.example.com"}, id="api_config")
+memory.remember("Production database is PostgreSQL 14", id="db_version")
+memory.remember({"theme": "dark", "language": "en", "notifications": True}, id="user_preferences")
 
-# Get it back anytime
-config = memory.get("api_config")
+# Get it back instantly
+db_info = memory.get("db_version")
+preferences = memory.get("user_preferences")
 
-# Check if memory exists
-if memory.exists("api_config"):
-    config = memory.get("api_config")
+# Check existence before retrieval
+if memory.exists("user_preferences"):
+    prefs = memory.get("user_preferences")
+    print(f"Theme: {prefs['theme']}")
 
-# Delete when done
-memory.delete("api_config")
+# Clean up when done
+memory.delete("temporary_data")
 ```
 
 ### Explore Memory Contents
