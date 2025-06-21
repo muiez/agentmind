@@ -65,24 +65,26 @@ class Memory:
     
     def remember(
         self,
-        content: str,
+        content: Any,
         metadata: Optional[Dict[str, Any]] = None,
         user_id: Optional[str] = None,
         session_id: Optional[str] = None,
-        ttl: Optional[int] = None
-    ) -> MemoryEntry:
+        ttl: Optional[int] = None,
+        id: Optional[str] = None
+    ) -> str:
         """
         Store a memory.
         
         Args:
-            content: The content to remember
+            content: Any data to remember (string, dict, list, etc.)
             metadata: Optional metadata dict
             user_id: Optional user ID (defaults to namespace)
             session_id: Optional session ID
             ttl: Optional time-to-live in seconds
+            id: Optional custom ID (auto-generated if not provided)
             
         Returns:
-            MemoryEntry: The stored memory
+            str: The memory ID for later retrieval
         """
         # Create memory metadata
         if metadata:
@@ -105,12 +107,19 @@ class Memory:
             meta = MemoryMetadata()
         
         # Generate memory ID
-        memory_id = self._generate_id(content, user_id)
+        if id:
+            memory_id = id
+        else:
+            memory_id = self._generate_id(str(content), user_id)
+        
+        # Convert content to string if necessary for MemoryEntry
+        # but store original content for retrieval
+        content_str = json.dumps(content) if not isinstance(content, str) else content
         
         # Create memory entry
         entry = MemoryEntry(
             id=memory_id,
-            content=content,
+            content=content_str,
             metadata=meta,
             user_id=user_id or self.config.namespace,
             session_id=session_id,
@@ -123,31 +132,35 @@ class Memory:
         # response.raise_for_status()
         
         # For MVP, store in local cache
+        # Store both the entry and the original content
         self._cache[memory_id] = entry
+        self._original_content = getattr(self, '_original_content', {})
+        self._original_content[memory_id] = content
         
-        return entry
+        return memory_id
     
     def remember_batch(
         self,
         memories: List[Union[str, Dict[str, Any]]],
         user_id: Optional[str] = None,
         session_id: Optional[str] = None
-    ) -> List[MemoryEntry]:
-        """Store multiple memories at once"""
-        entries = []
+    ) -> List[str]:
+        """Store multiple memories at once, returns list of memory IDs"""
+        ids = []
         for memory in memories:
             if isinstance(memory, str):
-                entry = self.remember(memory, user_id=user_id, session_id=session_id)
+                memory_id = self.remember(memory, user_id=user_id, session_id=session_id)
             else:
-                entry = self.remember(
+                memory_id = self.remember(
                     content=memory.get("content"),
                     metadata=memory.get("metadata"),
                     user_id=user_id or memory.get("user_id"),
                     session_id=session_id or memory.get("session_id"),
-                    ttl=memory.get("ttl")
+                    ttl=memory.get("ttl"),
+                    id=memory.get("id")
                 )
-            entries.append(entry)
-        return entries
+            ids.append(memory_id)
+        return ids
     
     def recall(
         self,
@@ -359,3 +372,266 @@ class Memory:
         """Generate unique memory ID"""
         unique_string = f"{content}{user_id or ''}{datetime.now(timezone.utc).isoformat()}"
         return f"mem_{hashlib.sha256(unique_string.encode()).hexdigest()[:12]}"
+    
+    def get(self, memory_id: str, include_metadata: bool = False) -> Any:
+        """
+        Retrieve memory by ID.
+        
+        Args:
+            memory_id: The ID returned by remember() or custom ID
+            include_metadata: Return metadata along with content
+            
+        Returns:
+            The stored content (or dict with content + metadata)
+            
+        Raises:
+            KeyError: If memory_id not found
+        """
+        if memory_id not in self._cache:
+            # Suggest similar IDs if possible
+            similar_ids = [id for id in self._cache.keys() if memory_id.lower() in id.lower()][:3]
+            error_msg = f"Memory ID '{memory_id}' not found."
+            if similar_ids:
+                error_msg += f" Did you mean one of: {', '.join(similar_ids)}?"
+            raise KeyError(error_msg)
+        
+        # Get original content if available
+        original_content = getattr(self, '_original_content', {})
+        if memory_id in original_content:
+            content = original_content[memory_id]
+        else:
+            # Fall back to string content from entry
+            entry = self._cache[memory_id]
+            try:
+                content = json.loads(entry.content)
+            except:
+                content = entry.content
+        
+        if include_metadata:
+            entry = self._cache[memory_id]
+            return {
+                "content": content,
+                "id": memory_id,
+                "timestamp": entry.timestamp.isoformat(),
+                "session_id": entry.session_id,
+                "user_id": entry.user_id,
+                "metadata": entry.metadata.model_dump(),
+                "ttl": entry.ttl
+            }
+        
+        return content
+    
+    def list(
+        self,
+        include_data: bool = False,
+        limit: int = 100,
+        offset: int = 0,
+        **filters
+    ) -> List[Dict[str, Any]]:
+        """
+        List all memories with their metadata.
+        
+        Args:
+            include_data: Include full content (not just preview)
+            limit: Maximum number of items to return
+            offset: Skip this many items (for pagination)
+            **filters: Filter by metadata (type, created_after, user_id, session_id, tags, etc.)
+            
+        Returns:
+            List of memory summaries (or full data if requested)
+        """
+        memories = []
+        
+        # Apply filters
+        filtered_entries = []
+        for memory_id, entry in self._cache.items():
+            # User filter
+            if 'user_id' in filters and entry.user_id != filters['user_id']:
+                continue
+            
+            # Session filter
+            if 'session_id' in filters and entry.session_id != filters['session_id']:
+                continue
+            
+            # Date filter
+            if 'created_after' in filters:
+                filter_date = datetime.fromisoformat(filters['created_after']) if isinstance(filters['created_after'], str) else filters['created_after']
+                if entry.timestamp < filter_date:
+                    continue
+            
+            # Category filter
+            if 'category' in filters and entry.metadata.category != filters['category']:
+                continue
+            
+            # Tags filter
+            if 'tags' in filters:
+                filter_tags = filters['tags'] if isinstance(filters['tags'], list) else [filters['tags']]
+                if not any(tag in entry.metadata.tags for tag in filter_tags):
+                    continue
+            
+            # Type filter (based on original content)
+            if 'type' in filters:
+                original_content = getattr(self, '_original_content', {})
+                if memory_id in original_content:
+                    content_type = type(original_content[memory_id]).__name__
+                else:
+                    content_type = 'str'
+                
+                if content_type != filters['type']:
+                    continue
+            
+            filtered_entries.append((memory_id, entry))
+        
+        # Sort by timestamp (newest first)
+        filtered_entries.sort(key=lambda x: x[1].timestamp, reverse=True)
+        
+        # Apply pagination
+        paginated_entries = filtered_entries[offset:offset + limit]
+        
+        # Build response
+        for memory_id, entry in paginated_entries:
+            # Get content preview
+            original_content = getattr(self, '_original_content', {})
+            if memory_id in original_content:
+                content = original_content[memory_id]
+                content_type = type(content).__name__
+            else:
+                try:
+                    content = json.loads(entry.content)
+                    content_type = type(content).__name__
+                except:
+                    content = entry.content
+                    content_type = 'str'
+            
+            # Create preview
+            if isinstance(content, str):
+                preview = content[:100] + "..." if len(content) > 100 else content
+            elif isinstance(content, dict):
+                preview = f"Dict with {len(content)} keys"
+            elif isinstance(content, list):
+                preview = f"List with {len(content)} items"
+            else:
+                preview = str(content)[:100] + "..." if len(str(content)) > 100 else str(content)
+            
+            # Calculate size
+            size_str = json.dumps(content) if not isinstance(content, str) else content
+            size_bytes = len(size_str.encode('utf-8'))
+            if size_bytes < 1024:
+                size = f"{size_bytes} bytes"
+            elif size_bytes < 1024 * 1024:
+                size = f"{size_bytes / 1024:.1f} KB"
+            else:
+                size = f"{size_bytes / 1024 / 1024:.1f} MB"
+            
+            memory_info = {
+                "id": memory_id,
+                "preview": preview,
+                "type": content_type,
+                "size": size,
+                "created": entry.timestamp.isoformat(),
+                "user_id": entry.user_id,
+                "session_id": entry.session_id,
+                "metadata": entry.metadata.model_dump()
+            }
+            
+            if include_data:
+                memory_info["content"] = content
+            
+            memories.append(memory_info)
+        
+        return memories
+    
+    def inspect(self, memory_id: str) -> Dict[str, Any]:
+        """
+        Get detailed information about a specific memory.
+        
+        Args:
+            memory_id: The memory ID to inspect
+            
+        Returns:
+            Complete details including content, all metadata, and usage stats
+            
+        Raises:
+            KeyError: If memory_id not found
+        """
+        if memory_id not in self._cache:
+            raise KeyError(f"Memory ID '{memory_id}' not found")
+        
+        entry = self._cache[memory_id]
+        
+        # Get original content
+        original_content = getattr(self, '_original_content', {})
+        if memory_id in original_content:
+            content = original_content[memory_id]
+            content_type = type(content).__name__
+        else:
+            try:
+                content = json.loads(entry.content)
+                content_type = type(content).__name__
+            except:
+                content = entry.content
+                content_type = 'str'
+        
+        # Calculate size
+        size_str = json.dumps(content) if not isinstance(content, str) else content
+        size_bytes = len(size_str.encode('utf-8'))
+        if size_bytes < 1024:
+            size = f"{size_bytes} bytes"
+        elif size_bytes < 1024 * 1024:
+            size = f"{size_bytes / 1024:.1f} KB"
+        else:
+            size = f"{size_bytes / 1024 / 1024:.1f} MB"
+        
+        # TODO: In production, track access count and last accessed
+        return {
+            "id": memory_id,
+            "content": content,
+            "metadata": {
+                "type": content_type,
+                "size": size,
+                "created": entry.timestamp.isoformat(),
+                "last_accessed": entry.timestamp.isoformat(),  # Would track separately in production
+                "access_count": 1,  # Would track in production
+                "session_id": entry.session_id,
+                "user_id": entry.user_id,
+                "tags": entry.metadata.tags,
+                "category": entry.metadata.category,
+                "importance": entry.metadata.importance,
+                "confidence": entry.metadata.confidence,
+                "ttl": entry.ttl,
+                "custom": entry.metadata.custom
+            }
+        }
+    
+    def exists(self, memory_id: str) -> bool:
+        """
+        Check if a memory ID exists.
+        
+        Args:
+            memory_id: The memory ID to check
+            
+        Returns:
+            True if exists, False otherwise
+        """
+        return memory_id in self._cache
+    
+    def delete(self, memory_id: str) -> bool:
+        """
+        Delete a memory by ID.
+        
+        Args:
+            memory_id: The memory ID to delete
+            
+        Returns:
+            True if deleted, False if not found
+        """
+        if memory_id in self._cache:
+            del self._cache[memory_id]
+            
+            # Also remove from original content cache
+            original_content = getattr(self, '_original_content', {})
+            if memory_id in original_content:
+                del original_content[memory_id]
+            
+            return True
+        return False

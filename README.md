@@ -12,26 +12,38 @@ Every AI agent needs a conscience - memory to remember, beliefs to guide decisio
 ```python
 from agentmind import Memory
 
-# Initialize memory for your AI assistant with session tracking
-memory = Memory(local_mode=True, session_id="chat_001")
+# Initialize memory for your AI assistant
+memory = Memory(local_mode=True)
 
-# Store different types of data during conversation
-memory.remember("I prefer morning meetings")
-memory.remember("My current project deadline is March 15th")
-memory.remember({
-    "preferences": {
-        "communication_style": "direct and concise",
-        "meeting_times": ["9am", "2pm"],
-        "timezone": "EST"
-    }
+# Store anything and get back an ID
+memory_id = memory.remember("I prefer morning meetings")
+# Returns: "mem_7a8c3b4f"
+
+# Store with custom ID
+memory.remember("Project deadline: March 15th", id="project_deadline")
+
+# Store complex data
+preferences_id = memory.remember({
+    "communication_style": "direct and concise",
+    "meeting_times": ["9am", "2pm"],
+    "timezone": "EST"
 })
 
-# Later when you need context...
-context = memory.recall("meeting preferences")
-# Returns: ["I prefer morning meetings", {"preferences": {"meeting_times": ["9am", "2pm"], ...}}]
+# Get by ID - simple and direct
+memory.get("project_deadline")
+# Returns: "Project deadline: March 15th"
 
-context = memory.recall("deadlines")
-# Returns: ["My current project deadline is March 15th"]
+# Get with metadata
+data = memory.get(preferences_id, include_metadata=True)
+# Returns: {"content": {...}, "id": "mem_...", "timestamp": "...", ...}
+
+# See what's in memory
+memories = memory.list()
+# Returns: [{"id": "mem_7a8c3b4f", "preview": "I prefer morning meetings", ...}, ...]
+
+# Semantic search still works
+context = memory.recall("meeting preferences")
+# Returns: ["I prefer morning meetings"]
 ```
 
 That's it. No vector DBs to manage. No complex prompt engineering. Just a conscience that works.
@@ -109,14 +121,50 @@ response = client.chat.completions.create(
 
 ## Advanced Features
 
-### Semantic Search
+### Direct Memory Access
 ```python
-# Find memories by meaning, not just keywords
-memories = memory.recall(
-    "technical challenges",
-    strategy="semantic",
-    limit=5
-)
+# Store with custom ID for easy retrieval
+memory.remember({"api_key": "secret", "endpoint": "https://api.example.com"}, id="api_config")
+
+# Get it back anytime
+config = memory.get("api_config")
+
+# Check if memory exists
+if memory.exists("api_config"):
+    config = memory.get("api_config")
+
+# Delete when done
+memory.delete("api_config")
+```
+
+### Explore Memory Contents
+```python
+# See everything in memory
+all_memories = memory.list()
+for mem in all_memories:
+    print(f"{mem['id']}: {mem['preview']} ({mem['size']})")
+
+# Get full data
+with_data = memory.list(include_data=True)
+
+# Filter memories
+user_memories = memory.list(user_id="user_123")
+recent = memory.list(created_after="2024-01-20")
+important = memory.list(category="important")
+
+# Paginate through large memory stores
+page1 = memory.list(limit=50, offset=0)
+page2 = memory.list(limit=50, offset=50)
+```
+
+### Detailed Inspection
+```python
+# Get complete details about a memory
+details = memory.inspect("mem_abc123")
+print(f"Created: {details['metadata']['created']}")
+print(f"Size: {details['metadata']['size']}")
+print(f"Type: {details['metadata']['type']}")
+print(f"Content: {details['content']}")
 ```
 
 ### Memory Management
@@ -129,24 +177,21 @@ user_profile = {
     "goals": ["Increase user retention", "Launch mobile app"],
     "last_review": "2024-01-15"
 }
-memory.remember(user_profile, session_id="onboarding_001")
+profile_id = memory.remember(user_profile, metadata={"category": "user_data"})
 
-# Organize memories with metadata
-memory.remember("Q4 revenue target: $1M", metadata={
-    "category": "business",
-    "importance": "high",
-    "expires": "2024-12-31"
-}, session_id="planning_session")
+# Batch operations - returns list of IDs
+memory_ids = memory.remember_batch([
+    "First memory",
+    {"content": "Second memory", "metadata": {"important": True}},
+    {"content": "Third memory", "id": "custom_id_3"}
+])
 
-# Batch operations
-memories = [
-    {"content": "Launched MVP", "timestamp": "2024-01-15"},
-    {"content": "First customer", "timestamp": "2024-02-01"}
-]
-memory.remember_batch(memories, session_id="milestone_tracking")
+# Semantic search still works alongside direct access
+memories = memory.recall("technical challenges", strategy="semantic", limit=5)
 
-# Forget when needed
-memory.forget(memory_id="mem_abc123")
+# Forget memories
+memory.forget(memory_id="mem_abc123")  # Deprecated - use delete()
+memory.delete("mem_abc123")  # New preferred method
 memory.forget_before(date="2023-01-01")
 ```
 

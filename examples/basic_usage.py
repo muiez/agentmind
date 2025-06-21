@@ -12,64 +12,101 @@ def demo_basic_usage():
     """Demonstrate basic memory operations"""
     print("=== AgentMind Memory Demo ===\n")
     
-    # Store some memories
+    # Store some memories - now returns IDs
     print("1. Storing memories...")
-    memory.remember("User prefers Python for backend development", metadata={"category": "tech_preference"})
-    memory.remember("User mentioned they have expertise in ML compilers", metadata={"importance": 0.9})
-    memory.remember("Meeting scheduled for next Tuesday at 3pm", metadata={"category": "calendar"})
-    print("✓ Stored 3 memories\n")
+    pref_id = memory.remember("User prefers Python for backend development", metadata={"category": "tech_preference"})
+    exp_id = memory.remember("User mentioned they have expertise in ML compilers", metadata={"importance": 0.9})
+    meeting_id = memory.remember("Meeting scheduled for next Tuesday at 3pm", id="tuesday_meeting")
+    print(f"✓ Stored 3 memories with IDs: {pref_id[:12]}..., {exp_id[:12]}..., tuesday_meeting\n")
     
-    # Recall memories
-    print("2. Recalling relevant context...")
+    # Direct retrieval by ID
+    print("2. Direct memory access...")
+    meeting = memory.get("tuesday_meeting")
+    print(f"Retrieved by ID: {meeting}")
+    
+    # Get with metadata
+    full_data = memory.get(pref_id, include_metadata=True)
+    print(f"With metadata: Category={full_data['metadata']['category']}\n")
+    
+    # List all memories
+    print("3. Exploring memory contents...")
+    memories = memory.list(limit=5)
+    for mem in memories:
+        print(f"  - {mem['id'][:12]}...: {mem['preview']} ({mem['size']})")
+    print()
+    
+    # Semantic recall still works
+    print("4. Semantic search...")
     context = memory.recall("What programming language does the user prefer?")
     print(f"Query: 'What programming language does the user prefer?'")
     print(f"Results: {context}\n")
     
-    # Get facts by category
-    print("3. Getting categorized facts...")
-    tech_facts = memory.get_facts(category="tech_preference")
-    print(f"Tech preferences: {[f['content'] for f in tech_facts]}\n")
+    # Inspect a specific memory
+    print("5. Inspecting memory details...")
+    details = memory.inspect(exp_id)
+    print(f"Memory type: {details['metadata']['type']}")
+    print(f"Size: {details['metadata']['size']}")
+    print(f"Importance: {details['metadata']['importance']}\n")
     
-    # Get recent memories
-    print("4. Getting recent memories (last 24 hours)...")
-    recent = memory.get_recent(hours=24)
-    print(f"Recent: {recent[:2]}...\n")  # Show first 2
-    
-    # Demonstrate session management
-    print("5. Session management...")
-    session_id = "demo_session_001"
-    memory.remember("Discussed memory layer architecture", session_id=session_id)
-    memory.remember("Target: 200ms recall latency", session_id=session_id)
-    
-    summary = memory.summarize_session(session_id)
-    print(f"Session summary: {summary}\n")
+    # Check existence and delete
+    print("6. Memory lifecycle...")
+    temp_id = memory.remember("Temporary note", id="temp_note")
+    print(f"Exists? {memory.exists('temp_note')}")
+    memory.delete("temp_note")
+    print(f"After deletion: {memory.exists('temp_note')}\n")
     
     # Show statistics
-    print("6. Memory statistics...")
+    print("7. Memory statistics...")
     stats = memory.get_stats()
     print(f"Total memories: {stats.total_memories}")
-    print(f"Total users: {stats.total_users}")
-    print(f"Popular categories: {stats.popular_categories}\n")
+    print(f"Storage used: {stats.storage_used_mb:.2f} MB\n")
 
 
 def demo_advanced_features():
     """Demonstrate advanced memory features"""
     print("=== Advanced Features ===\n")
     
-    # Batch operations
-    print("1. Batch memory storage...")
+    # Store complex data types
+    print("1. Storing complex data...")
+    config_data = {
+        "database": {"host": "localhost", "port": 5432},
+        "cache": {"ttl": 3600, "max_size": "1GB"},
+        "features": ["auth", "api", "webhooks"]
+    }
+    config_id = memory.remember(config_data, id="app_config")
+    
+    # Retrieve complex data
+    retrieved_config = memory.get("app_config")
+    print(f"Retrieved config: {retrieved_config['database']['host']}")
+    print(f"Features: {', '.join(retrieved_config['features'])}\n")
+    
+    # Batch operations - returns list of IDs
+    print("2. Batch memory storage...")
     memories = [
         {"content": "Q1 revenue: $50k", "metadata": {"category": "business", "importance": 0.8}},
-        {"content": "Q2 target: $150k", "metadata": {"category": "business", "importance": 0.9}},
+        {"content": "Q2 target: $150k", "metadata": {"category": "business", "importance": 0.9}, "id": "q2_target"},
         {"content": "Hired first engineer", "metadata": {"category": "team", "importance": 0.9}}
     ]
-    memory.remember_batch(memories, user_id="founder_001")
-    print("✓ Stored batch of 3 memories\n")
+    memory_ids = memory.remember_batch(memories, user_id="founder_001")
+    print(f"✓ Stored batch of 3 memories with IDs: {[id[:12] + '...' if len(id) > 12 else id for id in memory_ids]}\n")
     
-    # Different recall strategies
-    print("2. Testing recall strategies...")
+    # Filtering and exploring memories
+    print("3. Filtering memories...")
     
-    # Semantic search
+    # List by category
+    business_memories = memory.list(category="business")
+    print(f"Business memories: {len(business_memories)} found")
+    
+    # List by user
+    founder_memories = memory.list(user_id="founder_001")
+    print(f"Founder memories: {len(founder_memories)} found")
+    
+    # Get specific memory by custom ID
+    q2_data = memory.get("q2_target")
+    print(f"Q2 Target: {q2_data}\n")
+    
+    # Semantic search still works
+    print("4. Semantic search alongside direct access...")
     semantic_results = memory.recall(
         "financial performance",
         strategy=RecallStrategy.SEMANTIC,
@@ -78,14 +115,15 @@ def demo_advanced_features():
     print(f"Semantic search for 'financial performance': {semantic_results}\n")
     
     # Memory management
-    print("3. Memory lifecycle management...")
+    print("5. Memory lifecycle management...")
     
     # Update confidence
-    # In a real scenario, you'd have the memory_id from remember()
-    print("- Updating memory confidence scores")
+    if memory_ids:
+        success = memory.update_confidence(memory_ids[0], 0.95)
+        print(f"- Updated confidence: {success}")
     
     # GDPR compliance
-    print("4. GDPR compliance features...")
+    print("\n6. GDPR compliance features...")
     user_data = memory.export_user_data("founder_001")
     print(f"- Exported {user_data['memory_count']} memories for user")
     
