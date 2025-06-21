@@ -149,19 +149,19 @@ def demo_use_cases():
     context = support_memory.recall("previous issues", user_id="customer_456")
     print(f"Support context: {context}\n")
     
-    # Personal assistant
-    print("2. Personal Assistant")
-    assistant_memory = Memory(api_key="am_demo_key_xxx")
-    assistant_memory.remember("Prefers meetings in the morning")
-    assistant_memory.remember("Allergic to peanuts")
-    assistant_memory.remember("Birthday: June 15th")
+    # Personal AI agent
+    print("2. Personal AI Agent")
+    agent_memory = Memory(api_key="am_demo_key_xxx")
+    agent_memory.remember("Prefers meetings in the morning")
+    agent_memory.remember("Allergic to peanuts")
+    agent_memory.remember("Birthday: June 15th")
     
     # Planning lunch
-    lunch_context = assistant_memory.recall("dietary restrictions")
+    lunch_context = agent_memory.recall("dietary restrictions")
     print(f"Lunch planning context: {lunch_context}\n")
     
-    # Code assistant
-    print("3. Code Assistant")
+    # Code agent
+    print("3. Code Agent")
     code_memory = Memory(api_key="am_demo_key_xxx")
     code_memory.remember("Project uses TypeScript with strict mode")
     code_memory.remember("Prefers functional programming style")

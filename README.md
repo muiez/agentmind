@@ -12,8 +12,12 @@ Every AI agent needs a conscience - memory to remember, beliefs to guide decisio
 ```python
 from agentmind import Memory
 
-# Initialize memory for your AI assistant
-memory = Memory(local_mode=True)
+# Initialize memory for your AI agent
+# Can be scoped by session and/or user for isolated memory spaces
+memory = Memory(local_mode=True)  # Global memory
+# memory = Memory(local_mode=True, session_id="chat_001")  # Session-specific
+# memory = Memory(local_mode=True, user_id="user_123")  # User-specific
+# memory = Memory(local_mode=True, user_id="user_123", session_id="chat_001")  # Both
 
 # Store anything and get back an ID
 memory_id = memory.remember("I prefer morning meetings")
