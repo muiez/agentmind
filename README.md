@@ -7,7 +7,7 @@
 
 ## Why AgentMind?
 
-Every AI agent needs a conscience - memory to remember, beliefs to guide decisions, reflection to improve, and ethics to stay aligned. Today, developers hack together vector DBs, prompt engineering, and custom storage. We make it simple.
+Every AI agent needs a conscience - memory to ground truths, beliefs to guide reasoning, reflection to improve, and ethics to stay aligned. Today, developers hack together vector DBs, prompt engineering, and custom storage. We make it simple to manage your agent's memory across tools and workflows.
 
 ```python
 from agentmind import Memory
