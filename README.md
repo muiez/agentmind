@@ -9,8 +9,6 @@
 
 Every AI agent needs a conscience - memory to remember, beliefs to guide decisions, reflection to improve, and ethics to stay aligned. Today, developers hack together vector DBs, prompt engineering, and custom storage. We make it simple.
 
-**Core capability:** Semantic memory retrieval with natural language understanding - query memories using conversational language and get contextually relevant results.
-
 ```python
 from agentmind import Memory
 
@@ -35,6 +33,7 @@ preferences_id = memory.remember({
     "timezone": "EST"
 })
 
+# Later when you need context...
 # Get by ID - simple and direct
 memory.get("project_deadline")
 # Returns: "Project deadline: March 15th"
