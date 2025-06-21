@@ -177,7 +177,7 @@ We're building a managed cloud service so you don't have to worry about infrastr
 memory = Memory(api_key="your-api-key")
 ```
 
-**[→ Join the waitlist](#)** to get early access and special launch pricing.
+**[→ Join the waitlist](https://agent-mind.com)** to get early access and special launch pricing.
 
 ## Who's Using AgentMind?
 
@@ -217,7 +217,7 @@ memory = Memory(api_key="your-api-key")
 ## Community
 
 - [Discord](https://discord.gg/agentmind) - Chat with the community
-- [Twitter](https://twitter.com/agentmindai) - Latest updates
+- [X](https://twitter.com/agentmind) - Latest updates
 - Blog - Coming soon
 
 ## Contributing
