@@ -1,4 +1,4 @@
-# agentmind memory 🧠
+# AgentMind memory 🧠
 
 > The conscience layer for AI agents. Memory, beliefs, reflection, and ethics in one simple package.
 
