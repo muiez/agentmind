@@ -5,7 +5,7 @@
 [![PyPI version](https://badge.fury.io/py/agentmind.svg)](https://badge.fury.io/py/agentmind)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Why agentmind?
+## Why AgentMind?
 
 Every AI agent needs a conscience - memory to remember, beliefs to guide decisions, reflection to improve, and ethics to stay aligned. Today, developers hack together vector DBs, prompt engineering, and custom storage. We make it simple.
 
