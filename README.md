@@ -285,15 +285,18 @@ memory = Memory(api_key="your-api-key")
 ## Roadmap
 
 - [x] Core memory API
+- [x] Direct memory access (get/list/inspect)
+- [x] Store any data type (dict, list, objects)
 - [x] LangChain integration
 - [x] OpenAI integration
 - [ ] smolagents integration
 - [x] Semantic search
 - [ ] Memory compression
-- [ ] Multi-modal memories (images, audio)
+- [ ] Multi-modal memories (images, audio, PDFs)
 - [ ] Reflection layer (self-improving memory)
 - [ ] Belief system (confidence tracking)
 - [ ] Ethics layer (value alignment)
+- [ ] Cloud service (currently local only)
 
 ## Community
 
