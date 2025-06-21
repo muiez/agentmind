@@ -9,6 +9,8 @@
 
 Every AI agent needs a conscience - memory to remember, beliefs to guide decisions, reflection to improve, and ethics to stay aligned. Today, developers hack together vector DBs, prompt engineering, and custom storage. We make it simple.
 
+**Core capability:** Semantic memory retrieval with natural language understanding - query memories using conversational language and get contextually relevant results.
+
 ```python
 from agentmind import Memory
 
@@ -41,13 +43,19 @@ memory.get("project_deadline")
 data = memory.get(preferences_id, include_metadata=True)
 # Returns: {"content": {...}, "id": "mem_...", "timestamp": "...", ...}
 
+# Natural language search - the magic of AgentMind!
+context = memory.recall("What are the user's meeting preferences?")
+# Returns: ["I prefer morning meetings", "communication_style: direct and concise"]
+
+# Semantic search understands meaning, not just keywords
+memory.remember("Team standup is at 9am every day")
+memory.remember("Budget review happens every Friday at 2pm")
+meetings = memory.recall("When are the morning meetings?")
+# Finds: ["Team standup is at 9am every day", "I prefer morning meetings"]
+
 # See what's in memory
 memories = memory.list()
 # Returns: [{"id": "mem_7a8c3b4f", "preview": "I prefer morning meetings", ...}, ...]
-
-# Semantic search still works
-context = memory.recall("meeting preferences")
-# Returns: ["I prefer morning meetings"]
 ```
 
 That's it. No vector DBs to manage. No complex prompt engineering. Just a conscience that works.
